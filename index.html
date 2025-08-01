@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Goal Tracker - 2030 Vision</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .title {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+            flex: 1;
+        }
+        
+        @keyframes glow {
+            from { filter: brightness(1); }
+            to { filter: brightness(1.2); }
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        
+        .user-info {
+            text-align: right;
+            color: #ff00ff;
+        }
+        
+        .logout-btn {
+            background: linear-gradient(45deg, #ff0055, #ff00ff);
+            border: none;
+            border-radius: 5px;
+            padding: 8px 16px;
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .auth-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .auth-form {
+            background: rgba(10, 10, 26, 0.95);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 40px;
+            width: 400px;
+            max-width: 90vw;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+        }
+        
+        .auth-title {
+            text-align: center;
+            color: #00ffff;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #ff00ff;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            padding: 12px;
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff00ff;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .auth-btn {
+            flex: 1;
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            border: none;
+            border-radius: 5px;
+            padding: 12px;
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 0, 255, 0.4);
+        }
+        
+        .toggle-auth {
+            text-align: center;
+            margin-top: 20px;
+            color: #ffff00;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        .main-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: rgba(0, 20, 40, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 30px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.3),
+                inset 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00, #00ffff);
+            border-radius: 15px;
+            z-index: -1;
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .amount {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 700;
+            color: #00ffff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+            margin-bottom: 10px;
+        }
+        
+        .progress-container {
+            grid-column: 1 / -1;
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(0, 20, 40, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #ff00ff, #ffff00);
+            border-radius: 13px;
+            transition: width 0.8s ease-out;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .progress-text {
+            text-align: center;
+            color: #ffff00;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .control-group {
+            background: rgba(0, 20, 40, 0.6);
+            border: 1px solid #ff00ff;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .control-group h3 {
+            color: #ff00ff;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            font-size: 1rem;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            padding: 10px;
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #ff00ff;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+        }
+        
+        button {
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 0, 255, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(0, 20, 40, 0.6);
+            border: 1px solid #ffff00;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            color: #ffff00;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .error-message {
+            color: #ff0055;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-display {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .user-info {
+                text-align: center;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="authModal" class="auth-modal">
+        <div class="auth-form">
+            <h2 class="auth-title" id="authTitle">Login</h2>
+            <div id="errorMessage" class="error-message hidden"></div>
+            
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                
+                <div class="auth-buttons">
+                    <button type="submit" class="auth-btn" id="authSubmit">Login</button>
+                </div>
+            </form>
+            
+            <div class="toggle-auth" id="toggleAuth">
+                Don't have an account? Sign up
+            </div>
+        </div>
+    </div>
+
+    <div id="mainApp" class="hidden">
+        <div class="container">
+            <div class="header">
+                <div>
+                    <h1 class="title">Financial Vision 2030</h1>
+                    <p class="subtitle">Liquid Assets Goal Tracker</p>
+                </div>
+                <div class="user-info">
+                    <div>Welcome, <span id="currentUser"></span></div>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+            
+            <div class="main-display">
+                <div class="card">
+                    <h2 class="card-title">Current Assets</h2>
+                    <div class="amount" id="currentAmount">₦0</div>
+                    <div class="stat-label">Last Updated: <span id="lastUpdated">Never</span></div>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title">Target Goal</h2>
+                    <div class="amount">₦1,000,000,000</div>
+                    <div class="stat-label">Deadline: December 2030</div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="progressPercent">0%</span> Complete | 
+                        <span id="remainingAmount">₦1,000,000,000</span> Remaining
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <h3>Add Assets</h3>
+                    <div class="input-row">
+                        <input type="number" id="addAmount" placeholder="Enter amount" min="0">
+                        <button onclick="addAssets()">Add</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Subtract Assets</h3>
+                    <div class="input-row">
+                        <input type="number" id="subtractAmount" placeholder="Enter amount" min="0">
+                        <button onclick="subtractAssets()">Subtract</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-label">Days Until 2030</div>
+                    <div class="stat-value" id="daysRemaining">-</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Required Daily Savings</div>
+                    <div class="stat-value" id="dailySavings">₦0</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Progress This Year</div>
+                    <div class="stat-value" id="yearlyProgress">₦0</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Achievement Rate</div>
+                    <div class="stat-value" id="achievementRate">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class FinancialDB {
+            constructor() {
+                this.users = JSON.parse(localStorage.getItem('financial_users') || '{}');
+                this.currentUser = localStorage.getItem('current_user');
+            }
+            
+            createUser(username, password) {
+                if (this.users[username]) {
+                    throw new Error('Username already exists');
+                }
+                
+                this.users[username] = {
+                    password: password,
+                    currentAssets: 0,
+                    transactions: [],
+                    createdAt: new Date().toISOString(),
+                    lastUpdated: null
+                };
+                
+                this.saveUsers();
+                return true;
+            }
+            
+            authenticateUser(username, password) {
+                const user = this.users[username];
+                if (!user || user.password !== password) {
+                    throw new Error('Invalid username or password');
+                }
+                
+                this.currentUser = username;
+                localStorage.setItem('current_user', username);
+                return user;
+            }
+            
+            getCurrentUserData() {
+                if (!this.currentUser || !this.users[this.currentUser]) {
+                    return null;
+                }
+                return this.users[this.currentUser];
+            }
+            
+            updateUserAssets(amount, type = 'update') {
+                if (!this.currentUser) return false;
+                
+                const user = this.users[this.currentUser];
+                const transaction = {
+                    type: type,
+                    amount: amount,
+                    timestamp: new Date().toISOString(),
+                    balance: type === 'add' ? user.currentAssets + amount : 
+                            type === 'subtract' ? Math.max(0, user.currentAssets - amount) : amount
+                };
+                
+                if (type === 'add') {
+                    user.currentAssets += amount;
+                } else if (type === 'subtract') {
+                    user.currentAssets = Math.max(0, user.currentAssets - amount);
+                } else {
+                    user.currentAssets = amount;
+                }
+                
+                user.transactions.push(transaction);
+                user.lastUpdated = new Date().toISOString();
+                
+                this.saveUsers();
+                return true;
+            }
+            
+            saveUsers() {
+                localStorage.setItem('financial_users', JSON.stringify(this.users));
+            }
+            
+            logout() {
+                this.currentUser = null;
+                localStorage.removeItem('current_user');
+            }
+        }
+        
+        const db = new FinancialDB();
+        
+        let currentAssets = 0;
+        let isLoginMode = true;
+        const targetGoal = 1000000000;
+        const targetDate = new Date('2030-12-31');
+        
+        const authModal = document.getElementById('authModal');
+        const mainApp = document.getElementById('mainApp');
+        const authForm = document.getElementById('authForm');
+        const authTitle = document.getElementById('authTitle');
+        const authSubmit = document.getElementById('authSubmit');
+        const toggleAuth = document.getElementById('toggleAuth');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        function initializeApp() {
+            const userData = db.getCurrentUserData();
+            if (userData) {
+                currentAssets = userData.currentAssets;
+                document.getElementById('currentUser').textContent = db.currentUser;
+                authModal.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                updateDisplay();
+            } else {
+                authModal.classList.remove('hidden');
+                mainApp.classList.add('hidden');
+            }
+        }
+        
+        authForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                if (isLoginMode) {
+                    db.authenticateUser(username, password);
+                    currentAssets = db.getCurrentUserData().currentAssets;
+                    document.getElementById('currentUser').textContent = username;
+                    authModal.classList.add('hidden');
+                    mainApp.classList.remove('hidden');
+                    updateDisplay();
+                } else {
+                    db.createUser(username, password);
+                    showError('Account created successfully! Please login.');
+                    toggleAuthMode();
+                }
+                
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+                hideError();
+                
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+        
+        toggleAuth.addEventListener('click', toggleAuthMode);
+        
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            
+            if (isLoginMode) {
+                authTitle.textContent = 'Login';
+                authSubmit.textContent = 'Login';
+                toggleAuth.textContent = "Don't have an account? Sign up";
+            } else {
+                authTitle.textContent = 'Sign Up';
+                authSubmit.textContent = 'Sign Up';
+                toggleAuth.textContent = 'Already have an account? Login';
+            }
+            
+            hideError();
+        }
+        
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+        
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
+        
+        function logout() {
+            db.logout();
+            authModal.classList.remove('hidden');
+            mainApp.classList.add('hidden');
+            currentAssets = 0;
+            isLoginMode = true;
+            toggleAuthMode();
+        }
+        
+        function formatCurrency(amount) {
+            return '₦' + amount.toLocaleString();
+        }
+        
+        function updateDisplay() {
+            const userData = db.getCurrentUserData();
+            if (!userData) return;
+            
+            document.getElementById('currentAmount').textContent = formatCurrency(currentAssets);
+            
+            const progressPercent = Math.min((currentAssets / targetGoal) * 100, 100);
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+            document.getElementById('progressPercent').textContent = progressPercent.toFixed(2) + '%';
+            
+            const remaining = Math.max(targetGoal - currentAssets, 0);
+            document.getElementById('remainingAmount').textContent = formatCurrency(remaining);
+            
+            if (userData.lastUpdated) {
+                const lastUpdate = new Date(userData.lastUpdated);
+                document.getElementById('lastUpdated').textContent = lastUpdate.toLocaleString();
+            }
+            
+            const today = new Date();
+            const daysRemaining = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+            document.getElementById('daysRemaining').textContent = daysRemaining > 0 ? daysRemaining : 'Expired';
+            
+            if (daysRemaining > 0 && remaining > 0) {
+                const dailySavings = remaining / daysRemaining;
+                document.getElementById('dailySavings').textContent = formatCurrency(Math.ceil(dailySavings));
+            } else {
+                document.getElementById('dailySavings').textContent = '₦0';
+            }
+            
+            const currentYear = new Date().getFullYear();
+            const yearlyTransactions = userData.transactions.filter(t => 
+                new Date(t.timestamp).getFullYear() === currentYear && t.type === 'add'
+            );
+            const yearlyProgress = yearlyTransactions.reduce((sum, t) => sum + t.amount, 0);
+            document.getElementById('yearlyProgress').textContent = formatCurrency(yearlyProgress);
+            
+            document.getElementById('achievementRate').textContent = progressPercent.toFixed(1) + '%';
+        }
+        
+        function addAssets() {
+            const input = document.getElementById('addAmount');
+            const amount = parseFloat(input.value);
+            
+            if (amount && amount > 0) {
+                currentAssets += amount;
+                db.updateUserAssets(amount, 'add');
+                updateDisplay();
+                input.value = '';
+                
+                const currentAmountEl = document.getElementById('currentAmount');
+                currentAmountEl.style.animation = 'none';
+                setTimeout(() => {
+                    currentAmountEl.style.animation = 'glow 0.5s ease-in-out';
+                }, 10);
+            }
+        }
+        
+        function subtractAssets() {
+            const input = document.getElementById('subtractAmount');
+            const amount = parseFloat(input.value);
+            
+            if (amount && amount > 0) {
+                const newAmount = Math.max(0, currentAssets - amount);
+                currentAssets = newAmount;
+                db.updateUserAssets(amount, 'subtract');
+                updateDisplay();
+                input.value = '';
+                
+                const currentAmountEl = document.getElementById('currentAmount');
+                currentAmountEl.style.animation = 'none';
+                setTimeout(() => {
+                    currentAmountEl.style.animation = 'glow 0.5s ease-in-out';
+                }, 10);
+            }
+        }
+        
+        document.getElementById('addAmount').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addAssets();
+            }
+        });
+        
+        document.getElementById('subtractAmount').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                subtractAssets();
+            }
+        });
+        
+        initializeApp();
+        
+        setInterval(updateDisplay, 24 * 60 * 60 * 1000);
+    </script>
+</body>
+</html>
